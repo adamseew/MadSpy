@@ -1,0 +1,5 @@
+C:\Users\admin\documents\visual studio 2010\Projects\madspy\madspy\bin\x64\Debug\madspy.exe
+C:\Users\admin\documents\visual studio 2010\Projects\madspy\madspy\bin\x64\Debug\madspy.pdb
+C:\Users\admin\documents\visual studio 2010\Projects\madspy\madspy\obj\x64\Debug\ResolveAssemblyReference.cache
+C:\Users\admin\documents\visual studio 2010\Projects\madspy\madspy\obj\x64\Debug\madspy.exe
+C:\Users\admin\documents\visual studio 2010\Projects\madspy\madspy\obj\x64\Debug\madspy.pdb
