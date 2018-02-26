@@ -24,10 +24,10 @@ program to demonstrate three key behaviors of a spyware:
 1. Persistence: The program adds itself to system’s startup list to ensure it is executed on 
 system startup. Several methods exists for this. Easiest is Registry modification. 
 2. Spy modules: 
-    a. Enumerating running programs: You need to look into all running processes and 
+    - Enumerating running programs: You need to look into all running processes and 
 identify is the target program (assume "skype.exe") is running or not. If not, you 
 wait until it is loaded into memory. 
-    b. Once the target program has been loaded into memory, you start recording the 
+    - Once the target program has been loaded into memory, you start recording the 
 keystrokes (on a text file). Also, you take 5 snapshots of the screen, one every 30 
 seconds.  
 3.  Exfiltration: Now that you have all you need, you send the data as an email to yourself. 
@@ -41,8 +41,8 @@ The spyware executable and all source code.
 1. You may borrow code from: 
 http://www.codeproject.com/Articles/2082/API­hooking­revealed 
 2. Enumerating processes and Image load notification:  
-    a. https://msdn.microsoft.com/en­us/library/windows/desktop/ms682623(v=vs.85).aspx 
-    b. https://msdn.microsoft.com/en­us/library/windows/hardware/ff559957(v=vs.85).aspx 
+    - https://msdn.microsoft.com/en­us/library/windows/desktop/ms682623(v=vs.85).aspx 
+    - https://msdn.microsoft.com/en­us/library/windows/hardware/ff559957(v=vs.85).aspx 
 3. Registry Keys for startup: Note you can access registry keys programmatically using 
 system api calls. 
 http://www.tenforums.com/tutorials/2944-startup-items-add-delete-enable-disable-windows-10-a.html#option3 
