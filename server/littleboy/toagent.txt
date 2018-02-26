@@ -1,0 +1,1 @@
+Status:Active;TargetProcess:taskmgr;ScreenCapturerInterval:30000;ScreenWidth:800;ScreenHeight:600
